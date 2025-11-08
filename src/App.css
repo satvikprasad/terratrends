@@ -118,3 +118,14 @@
     @apply bg-background text-foreground;
   }
 }
+
+.county-label {
+  pointer-events: none !important;
+  font-size: 6pt;
+  opacity: 0.5;
+}
+
+.county-label-inner {
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
