@@ -7,20 +7,13 @@ import countyData from "./data/us_counties.json";
 
 import * as L from "leaflet";
 import { useCallback } from "react";
-import {
-    SidebarProvider,
-    Sidebar,
-    SidebarContent,
-    SidebarGroup,
-    SidebarGroupLabel,
-    SidebarGroupContent,
-    SidebarMenu,
-    SidebarMenuItem,
-    SidebarMenuButton,
-} from "./components/ui/sidebar";
+import Sidebar from "./components/Sidebar";
+import { MapProvider, useMapState } from "./Map";
 
 function RenderCounties(): React.JSX.Element {
     const map = useMap();
+
+    const { setCounty } = useMapState();
 
     const mouseOverCounty = useCallback((e: L.LeafletMouseEvent) => {
         e.target.setStyle({
@@ -46,6 +39,9 @@ function RenderCounties(): React.JSX.Element {
 
         layer.on("mouseover", mouseOverCounty);
         layer.on("mouseout", mouseLeaveCounty);
+        layer.on("mousedown", () => {
+            setCounty?.(name);
+        });
 
         const marker = L.marker(center, {
             icon: L.divIcon({
@@ -76,43 +72,24 @@ function RenderCounties(): React.JSX.Element {
 
 function App() {
     return (
-        <>
-            <SidebarProvider>
-                <div className="flex flex-row">
-                    <Sidebar>
-                        <SidebarContent>
-                            <SidebarGroup>
-                                <SidebarGroupLabel>
-                                    TerraTrends
-                                </SidebarGroupLabel>
-                                <SidebarGroupContent>
-                                    <SidebarMenu>
-                                        <SidebarMenuItem>
-                                            <SidebarMenuButton>
-                                                Demo Button
-                                            </SidebarMenuButton>
-                                        </SidebarMenuItem>
-                                    </SidebarMenu>
-                                </SidebarGroupContent>
-                            </SidebarGroup>
-                        </SidebarContent>
-                    </Sidebar>
-                    <div className="min-h-screen">
-                        <MapContainer
-                            center={[33.275, -84.441]}
-                            zoom={8}
-                            scrollWheelZoom={false}
-                            style={{
-                                height: "100vh",
-                                width: "100vw",
-                            }}
-                        >
-                            <RenderCounties />
-                        </MapContainer>
-                    </div>
+        <MapProvider>
+            <div className="flex flex-row w-screen h-screen">
+                <Sidebar/>
+                <div className="w-full flex flex-col">
+                    <MapContainer
+                        center={[33.275, -84.441]}
+                        zoom={8}
+                        scrollWheelZoom={false}
+                        style={{
+                            height: "100vh",
+                            width: "100%"
+                        }}
+                    >
+                        <RenderCounties />
+                    </MapContainer>
                 </div>
-            </SidebarProvider>
-        </>
+            </div>
+        </MapProvider>
     );
 }
 
