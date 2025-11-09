@@ -1,15 +1,22 @@
 import { createContext, useContext, useState } from "react";
 
+export type MapCounty = {
+    stateId: number;
+    countyId: number;
+    name: string;
+};
+
 const MapContext = createContext<{
-    county: string | null;
-    setCounty: React.Dispatch<React.SetStateAction<string | null>> | null;
+    // Represented by tuple of state id, and county id
+    county: MapCounty | null;
+    setCounty: React.Dispatch<React.SetStateAction<MapCounty | null>> | null;
 }>({
     county: null,
     setCounty: null,
 });
 
 export function MapProvider({ children }: React.PropsWithChildren) {
-    const [county, setCounty] = useState<string | null>(null);
+    const [county, setCounty] = useState<MapCounty | null>(null);
 
     return (
         <MapContext.Provider

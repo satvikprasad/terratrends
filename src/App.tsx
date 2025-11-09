@@ -1,28 +1,42 @@
 import "./App.css";
 
 import { MapContainer, GeoJSON, useMap } from "react-leaflet";
-import type { GeoJsonObject, Feature } from "geojson";
+import type { GeoJsonObject, Feature, Geometry } from "geojson";
 
 import countyData from "./data/us_counties.json";
 
 import * as L from "leaflet";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Sidebar from "./components/Sidebar";
-import { MapProvider, useMapState } from "./Map";
+import { MapProvider, useMapState, type MapCounty } from "./Map";
 
 function RenderCounties(): React.JSX.Element {
     const map = useMap();
+    const geoJsonRef = useRef<L.GeoJSON>(null);
 
-    const { setCounty } = useMapState();
+    const { county, setCounty } = useMapState();
+
+    const [hoveredCounty, setHoveredCounty] = useState<MapCounty | null>(null);
+
+    // Triggered when the selected county is updated
+    useEffect(() => {
+        if (!geoJsonRef.current) {
+            return;
+        }
+    }, [county]);
 
     const mouseOverCounty = useCallback((e: L.LeafletMouseEvent) => {
-        e.target.setStyle({
-            fillColor: "#ff6b6b",
+        const feature = e.target.feature as Feature;
+
+        setHoveredCounty({
+            countyId: feature.properties?.COUNTY,
+            stateId: feature.properties?.STATE,
+            name: feature.properties?.NAME
         });
     }, []);
 
-    const mouseLeaveCounty = useCallback((e: L.LeafletMouseEvent) => {
-        e.target.setStyle(countyStyle);
+    const mouseLeaveCounty = useCallback(() => {
+        setHoveredCounty(null);
     }, []);
 
     const onEachCounty: (feature: Feature, layer: L.Layer) => void = (
@@ -30,6 +44,8 @@ function RenderCounties(): React.JSX.Element {
         layer
     ) => {
         const name = feature.properties?.NAME;
+        const countyId = feature.properties?.COUNTY;
+        const stateId = feature.properties?.STATE;
 
         if (!name) {
             return;
@@ -39,8 +55,13 @@ function RenderCounties(): React.JSX.Element {
 
         layer.on("mouseover", mouseOverCounty);
         layer.on("mouseout", mouseLeaveCounty);
+
         layer.on("mousedown", () => {
-            setCounty?.(name);
+            setCounty?.({
+                stateId: stateId,
+                countyId: countyId,
+                name: name
+            });
         });
 
         const marker = L.marker(center, {
@@ -54,17 +75,48 @@ function RenderCounties(): React.JSX.Element {
         marker.addTo(map);
     };
 
-    const countyStyle = {
-        fillColor: "#e6f3ff",
-        weight: 2,
-        opacity: 0.8,
-        color: "#ff3385",
+    const getCountyStyle = (feature: Feature<Geometry, any> | undefined) => {
+        const stateId = feature?.properties?.STATE;
+        const countyId = feature?.properties?.COUNTY;
+
+        const isSelected =
+            stateId == county?.stateId && countyId == county?.countyId;
+
+        const isHovering =
+            stateId == hoveredCounty?.stateId &&
+            countyId == hoveredCounty?.countyId;
+
+        if (isHovering) {
+            return {
+                fillColor: "#7391ba",
+                weight: 2,
+                opacity: 0.8,
+                color: "#ff3385",
+            };
+        }
+
+        if (isSelected) {
+            return {
+                fillColor: "#006cff",
+                weight: 2,
+                opacity: 1.0,
+                color: "#ff3385",
+            };
+        }
+
+        return {
+            fillColor: "#d6e7ff",
+            weight: 2,
+            opacity: 0.8,
+            color: "#ff3385",
+        };
     };
 
     return (
         <GeoJSON
+            ref={geoJsonRef}
             data={countyData as GeoJsonObject}
-            style={countyStyle}
+            style={getCountyStyle}
             onEachFeature={onEachCounty}
         />
     );
@@ -87,6 +139,14 @@ function App() {
                     >
                         <RenderCounties />
                     </MapContainer>
+                </div>
+            </div>
+            <div className="absolute top-3 right-3 z-1000 bg-white p-3 rounded-xl flex flex-col gap-2 shadow-md border-2 border-blue-300">
+                <h1 className="font-bold text-xl text-center">Forecasted Growth</h1>
+                <div className="w-60 h-10 bg-linear-to-r from-red-500 via-white to-blue-600 rounded-xl"></div>
+                <div className="grid grid-cols-2 text-sm text-slate-700 mx-1">
+                        <p>Negative</p>
+                        <p className="text-right">Positive</p>
                 </div>
             </div>
         </MapProvider>
