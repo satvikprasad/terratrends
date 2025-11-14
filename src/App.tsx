@@ -91,7 +91,7 @@ function RenderCounties(): React.JSX.Element {
                 fillColor: "#7391ba",
                 weight: 2,
                 opacity: 0.8,
-                color: "#ff3385",
+                color: "#757575",
             };
         }
 
@@ -100,7 +100,7 @@ function RenderCounties(): React.JSX.Element {
                 fillColor: "#006cff",
                 weight: 2,
                 opacity: 1.0,
-                color: "#ff3385",
+                color: "#757575",
             };
         }
 
@@ -108,7 +108,7 @@ function RenderCounties(): React.JSX.Element {
             fillColor: "#d6e7ff",
             weight: 2,
             opacity: 0.8,
-            color: "#ff3385",
+            color: "#757575",
         };
     };
 
@@ -130,7 +130,9 @@ function App() {
                 <div className="w-full flex flex-col">
                     <MapContainer
                         center={[33.275, -84.441]}
+                        minZoom={7.5}
                         zoom={8}
+                        maxZoom={9}
                         scrollWheelZoom={false}
                         style={{
                             height: "100vh",
