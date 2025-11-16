@@ -26,16 +26,12 @@ function CountySearch() {
     );
 
     useEffect(() => {
-        if (searchTerm.trim() === "") {
-            setFilteredCounties([]);
-            setShowDropdown(false);
-        } else {
-            const filtered = allCounties.filter(county => 
-                county.name.toLowerCase().includes(searchTerm.toLowerCase())
-            ).slice(0, 10); // only show up to 10 counties in dropdown
-            setFilteredCounties(filtered);
-            setShowDropdown(filtered.length > 0);
-        }
+        const filtered = allCounties.filter(county =>
+            county.name.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+
+        setFilteredCounties(filtered);
+        setShowDropdown(filtered.length > 0);
     }, [searchTerm]);
 
     const handleCountySelect = (county: MapCounty) => {
@@ -56,12 +52,12 @@ function CountySearch() {
                 className="w-60 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {showDropdown && (
-                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg max-h-60 overflow-y-auto z-10">
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-md max-h-60 overflow-y-auto z-10">
                     {filteredCounties.map((county) => (
                         <div
                             key={`${county.stateId}-${county.countyId}`}
                             onClick={() => handleCountySelect(county)}
-                            className="px-3 py-2 hover:bg-blue-100 cursor-pointer border-b border-gray-200 last:border-b-0"
+                            className="p-3 hover:bg-blue-100 cursor-pointer border-b border-gray-200 last:border-b-0"
                         >
                             <p className="text-sm font-medium">{county.name}</p>
                         </div>
