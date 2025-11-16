@@ -113,8 +113,6 @@ function RenderCounties(): React.JSX.Element {
             return;
         }
 
-        const center = L.geoJSON(feature).getBounds().getCenter();
-
         layer.on("mouseover", mouseOverCounty);
         layer.on("mouseout", mouseLeaveCounty);
 
@@ -125,16 +123,6 @@ function RenderCounties(): React.JSX.Element {
                 name: name
             });
         });
-
-        const marker = L.marker(center, {
-            icon: L.divIcon({
-                className: "county-label",
-                html: `<div class="county-label-inner">${name}</div>`,
-                iconSize: undefined,
-            }),
-        });
-
-        marker.addTo(map);
     };
 
     const getCountyStyle = (feature: Feature<Geometry, any> | undefined) => {
