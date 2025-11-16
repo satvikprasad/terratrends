@@ -126,7 +126,7 @@ function App() {
     return (
         <MapProvider>
             <div className="flex flex-row w-screen h-screen">
-                <Sidebar/>
+                <Sidebar />
                 <div className="w-full flex flex-col">
                     <MapContainer
                         center={[33.275, -84.441]}
@@ -143,12 +143,12 @@ function App() {
                     </MapContainer>
                 </div>
             </div>
-            <div className="absolute top-3 right-3 z-1000 bg-white p-3 rounded-xl flex flex-col gap-2 shadow-md border-2 border-blue-300">
+            <div className="absolute top-3 right-3 z-1000 bg-white p-3 rounded-xl flex flex-col gap-2 shadow-md">
                 <h1 className="font-bold text-xl text-center">Forecasted Growth</h1>
                 <div className="w-60 h-10 bg-linear-to-r from-red-500 via-white to-blue-600 rounded-xl"></div>
                 <div className="grid grid-cols-2 text-sm text-slate-700 mx-1">
-                        <p>Negative</p>
-                        <p className="text-right">Positive</p>
+                    <p>Negative</p>
+                    <p className="text-right">Positive</p>
                 </div>
             </div>
         </MapProvider>

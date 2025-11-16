@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 export type MapCounty = {
     stateId: number;
@@ -9,20 +9,56 @@ export type MapCounty = {
 const MapContext = createContext<{
     // Represented by tuple of state id, and county id
     county: MapCounty | null;
-    setCounty: React.Dispatch<React.SetStateAction<MapCounty | null>> | null;
+    setCounty: (county: MapCounty) => void;
+
+    businessType: string | null;
+    setBusinessType: (businessType: string) => void;
 }>({
     county: null,
-    setCounty: null,
+    setCounty: () => {},
+
+    businessType: null,
+    setBusinessType: () => {}
 });
 
+type MapState = {
+    county: MapCounty | null;
+    businessType: string | null;
+};
+
 export function MapProvider({ children }: React.PropsWithChildren) {
-    const [county, setCounty] = useState<MapCounty | null>(null);
+    const [mapState, setMapState] = useState<MapState>({
+        county: null,
+        businessType: null,
+    });
+
+    const setCountyWithBusinessTypeCheck = useCallback((county: MapCounty) => {
+        setMapState((s) => {
+            if (s.businessType == null) return s; // Don't allow changes to selected county if 
+                                                  // business type hasn't been specified.
+
+            return {
+                businessType: s.businessType,
+                county
+            };
+        });
+    }, [setMapState]);
 
     return (
         <MapContext.Provider
             value={{
-                county,
-                setCounty,
+                county: mapState.county,
+                setCounty: setCountyWithBusinessTypeCheck,
+
+                businessType: mapState.businessType,
+                setBusinessType: (b) => {
+                    setMapState((s) => {
+                        return {
+                            businessType: b,
+                            county: s.county
+                        };
+                    })
+                }
             }}
         >
             {children}
