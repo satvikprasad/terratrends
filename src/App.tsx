@@ -6,9 +6,71 @@ import type { GeoJsonObject, Feature, Geometry } from "geojson";
 import countyData from "./data/us_counties.json";
 
 import * as L from "leaflet";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import { MapProvider, useMapState, type MapCounty } from "./Map";
+
+function CountySearch() {
+    const [searchTerm, setSearchTerm] = useState("");
+    const [filteredCounties, setFilteredCounties] = useState<MapCounty[]>([]);
+    const [showDropdown, setShowDropdown] = useState(false);
+    const { setCounty } = useMapState();
+
+    const allCounties: MapCounty[] = useMemo(() =>
+        countyData.features.map((feature) => ({
+            name: feature.properties.NAME,
+            stateId: parseInt(feature.properties.STATE),
+            countyId: parseInt(feature.properties.COUNTY)
+        })),
+        []
+    );
+
+    useEffect(() => {
+        if (searchTerm.trim() === "") {
+            setFilteredCounties([]);
+            setShowDropdown(false);
+        } else {
+            const filtered = allCounties.filter(county => 
+                county.name.toLowerCase().includes(searchTerm.toLowerCase())
+            ).slice(0, 10); // only show up to 10 counties in dropdown
+            setFilteredCounties(filtered);
+            setShowDropdown(filtered.length > 0);
+        }
+    }, [searchTerm]);
+
+    const handleCountySelect = (county: MapCounty) => {
+        setCounty?.({
+            name: county.name,
+            stateId: county.stateId,
+            countyId: county.countyId
+        });
+    };
+
+    return (
+        <div className="bg-white p-3 rounded-xl shadow-md relative">
+            <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search counties..."
+                className="w-60 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {showDropdown && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-lg max-h-60 overflow-y-auto z-10">
+                    {filteredCounties.map((county) => (
+                        <div
+                            key={`${county.stateId}-${county.countyId}`}
+                            onClick={() => handleCountySelect(county)}
+                            className="px-3 py-2 hover:bg-blue-100 cursor-pointer border-b border-gray-200 last:border-b-0"
+                        >
+                            <p className="text-sm font-medium">{county.name}</p>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
 
 function RenderCounties(): React.JSX.Element {
     const map = useMap();
@@ -143,13 +205,16 @@ function App() {
                     </MapContainer>
                 </div>
             </div>
-            <div className="absolute top-3 right-3 z-1000 bg-white p-3 rounded-xl flex flex-col gap-2 shadow-md">
-                <h1 className="font-bold text-xl text-center">Forecasted Growth</h1>
-                <div className="w-60 h-10 bg-linear-to-r from-red-500 via-white to-blue-600 rounded-xl"></div>
-                <div className="grid grid-cols-2 text-sm text-slate-700 mx-1">
-                    <p>Negative</p>
-                    <p className="text-right">Positive</p>
+            <div className="absolute top-3 right-3 z-1000 flex flex-col gap-2">
+                <div className="bg-white p-3 rounded-xl flex flex-col gap-2 shadow-md">
+                    <h1 className="font-bold text-xl text-center">Forecasted Growth</h1>
+                    <div className="w-60 h-10 bg-linear-to-r from-red-500 via-white to-blue-600 rounded-xl"></div>
+                    <div className="grid grid-cols-2 text-sm text-slate-700 mx-1">
+                        <p>Negative</p>
+                        <p className="text-right">Positive</p>
+                    </div>
                 </div>
+                <CountySearch />
             </div>
         </MapProvider>
     );
