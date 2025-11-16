@@ -129,11 +129,10 @@ function SidebarTab({
 }) {
     return (
         <button
-            className={`bg-transparent hover:cursor-pointer ${
-                currTab == tab
-                    ? "border-b-2 text-blue-500"
-                    : "border-b border-slate-200"
-            } p-3`}
+            className={`bg-transparent hover:cursor-pointer ${currTab == tab
+                ? "border-b-2 text-blue-500"
+                : "border-b border-slate-200"
+                } p-3`}
             onClick={() => {
                 setCurrTab(tab);
             }}
@@ -144,15 +143,17 @@ function SidebarTab({
 }
 
 export default function Sidebar(): React.JSX.Element {
-    const { county } = useMapState();
+    const { county, businessType, setBusinessType } = useMapState();
 
     const [tab, setTab] = useState<SidebarTab>("demographics");
+
+    const [inputBusType, setInputBusType] = useState<string>("");
 
     return (
         <>
             {/** Sidebar component */}
-            <div className="min-w-100 shadow-xl border-r-2 border-blue-300 max-h-screen flex flex-col overflow-hidden">
-                {county ? (
+            <div className="min-w-100 max-w-100 shadow-xl z-1000 max-h-screen flex flex-col overflow-hidden">
+                {(county && businessType) ? (
                     <>
                         <p className="text-slate-800 font-bold text-xl text-center py-4 px-3 border-b border-slate-200">
                             {county.name} County Analytics
@@ -180,9 +181,34 @@ export default function Sidebar(): React.JSX.Element {
                         })()}
                     </>
                 ) : (
-                    <p className="text-slate-600 p-3">
-                        Click on a county for further analytics.
-                    </p>
+                    <div className="p-6 flex flex-col gap-6">
+                        {businessType ? <>
+                            <p className="text-slate-600">
+                                Your selected business is a <span className="font-bold">{businessType}</span>. Click on a county for further analytics.
+                            </p>
+                        </> : <>
+                            <p className="text-slate-600">
+                                Tell us the type of your business, then click on a county for further analytics.
+                            </p>
+                            <hr className="text-slate-300" />
+                            <div className="flex flex-row text-black gap-3 items-center">
+                                <p>My business is a </p>
+                                <input className="outline-1 rounded-xl py-1 px-2" placeholder="kbbq restaurant" type="text" value={inputBusType} onChange={(e) => {
+                                    setInputBusType(e.currentTarget.value);
+                                }} />
+                                <p>.</p>
+                            </div>
+                            <button className={`p-3 rounded-xl ${inputBusType == "" ? "bg-slate-50 hover:cursor-not-allowed" : "bg-slate-100 hover:bg-slate-200"}`} onClick={() => {
+                                if (inputBusType == "") {
+                                    return;
+                                }
+
+                                setBusinessType(inputBusType);
+                            }}>
+                                Begin analysing my TerraTrends
+                            </button>
+                        </>}
+                    </div>
                 )}
             </div>
         </>
