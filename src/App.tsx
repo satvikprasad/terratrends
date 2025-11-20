@@ -1,6 +1,6 @@
 import "./App.css";
 
-import { MapContainer, GeoJSON, useMap } from "react-leaflet";
+import { MapContainer, GeoJSON } from "react-leaflet";
 import type { GeoJsonObject, Feature, Geometry } from "geojson";
 
 import countyData from "./data/us_counties.json";
@@ -21,8 +21,8 @@ function CountySearch() {
     const allCounties: MapCounty[] = useMemo(() =>
         countyData.features.map((feature) => ({
             name: feature.properties.NAME,
-            stateId: parseInt(feature.properties.STATE),
-            countyId: parseInt(feature.properties.COUNTY)
+            stateId: feature.properties.STATE.toString(),
+            countyId: feature.properties.COUNTY.toString()
         })),
         []
     );
@@ -88,9 +88,9 @@ function RenderCounties(): React.JSX.Element {
         const feature = e.target.feature as Feature;
 
         setHoveredCounty({
-            countyId: feature.properties?.COUNTY,
-            stateId: feature.properties?.STATE,
-            name: feature.properties?.NAME
+            countyId: feature.properties?.COUNTY?.toString() || "",
+            stateId: feature.properties?.STATE?.toString() || "",
+            name: feature.properties?.NAME || ""
         });
     }, []);
 
@@ -115,16 +115,16 @@ function RenderCounties(): React.JSX.Element {
 
         layer.on("mousedown", () => {
             setCounty?.({
-                stateId: stateId,
-                countyId: countyId,
-                name: name
+                stateId: stateId?.toString() || "",
+                countyId: countyId?.toString() || "",
+                name: name || ""
             });
         });
     };
 
     const getCountyStyle = (feature: Feature<Geometry, any> | undefined) => {
-        const stateId = feature?.properties?.STATE;
-        const countyId = feature?.properties?.COUNTY;
+        const stateId = feature?.properties?.STATE?.toString();
+        const countyId = feature?.properties?.COUNTY?.toString();
 
         const isSelected =
             stateId == county?.stateId && countyId == county?.countyId;
@@ -133,21 +133,24 @@ function RenderCounties(): React.JSX.Element {
             stateId == hoveredCounty?.stateId &&
             countyId == hoveredCounty?.countyId;
 
-        if (isHovering) {
+        // Only show hover effect when business type is selected
+        if (isHovering && businessType) {
             return {
-                fillColor: "#7391ba",
-                weight: 2,
-                opacity: 0.8,
-                color: "#757575",
+                fillColor: "#60a5fa", // Bright blue for hover
+                weight: 3, // Thicker border for visibility
+                opacity: 0.9,
+                color: "#475569", // Darker border
+                fillOpacity: 0.8,
             };
         }
 
         if (isSelected) {
             return {
-                fillColor: "#006cff",
-                weight: 2,
+                fillColor: "#3b82f6", // Vibrant blue
+                weight: 4, // Even thicker for selected
                 opacity: 1.0,
-                color: "#757575",
+                color: "#334155", // Darker border
+                fillOpacity: 0.9,
             };
         }
 
@@ -160,21 +163,32 @@ function RenderCounties(): React.JSX.Element {
 
             let color;
 
-            // Interpolate between blue and red (with white in the middle)
-            // using naive math.
-            if (t > 0.5) {
-                const norm = 2*t - 1;
-                color = `rgb(${255 - 255*norm}, ${255 - 255*norm}, 255)`;
+            // Interpolate between red and blue (with white in the middle)
+            // Red: rgb(239, 68, 68) - for negative values (t close to 0)
+            // White: rgb(255, 255, 255) - for neutral (t = 0.5)
+            // Blue: rgb(59, 130, 246) - for positive values (t close to 1)
+            if (t < 0.5) {
+                // Red to white (t=0 is red, t=0.5 is white)
+                const norm = t * 2; // 0 to 1 as t goes from 0 to 0.5
+                const r = 239 + (255 - 239) * norm;
+                const g = 68 + (255 - 68) * norm;
+                const b = 68 + (255 - 68) * norm;
+                color = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
             } else {
-                const norm = 2*t;
-                color = `rgb(255, ${255*norm}, ${255*norm})`;
+                // White to blue (t=0.5 is white, t=1 is blue)
+                const norm = (t - 0.5) * 2; // 0 to 1 as t goes from 0.5 to 1
+                const r = 255 - (255 - 59) * norm;
+                const g = 255 - (255 - 130) * norm;
+                const b = 255 - (255 - 246) * norm;
+                color = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
             }
 
             return {
                 fillColor: color,
-                weight: 2,
-                opacity: 1.0,
-                color: "#757575",
+                weight: 1.5,
+                opacity: 0.9,
+                color: "#475569", // Darker border
+                fillOpacity: 0.75,
             };
         }
 
@@ -182,7 +196,7 @@ function RenderCounties(): React.JSX.Element {
             fillColor: "#d6e7ff",
             weight: 2,
             opacity: 0.8,
-            color: "#757575",
+            color: "#475569", // Darker border
         };
     };
 
@@ -220,10 +234,10 @@ function App() {
             <div className="absolute top-3 right-3 z-1000 flex flex-col gap-2">
                 <div className="bg-white p-3 rounded-xl flex flex-col gap-2 shadow-md">
                     <h1 className="font-bold text-xl text-center">Forecasted Growth</h1>
-                    <div className="w-60 h-10 bg-linear-to-r from-red-500 via-white to-blue-600 rounded-xl"></div>
-                    <div className="grid grid-cols-2 text-sm text-slate-700 mx-1">
-                        <p>Negative</p>
-                        <p className="text-right">Positive</p>
+                    <div className="w-60 h-10 rounded-lg border border-slate-200 shadow-sm" style={{background: 'linear-gradient(to right, #ef4444, white, #3b82f6)'}}></div>
+                    <div className="grid grid-cols-2 text-xs text-slate-600 font-medium">
+                        <p className="text-red-500">Negative</p>
+                        <p className="text-right text-blue-500">Positive</p>
                     </div>
                 </div>
                 <CountySearch />

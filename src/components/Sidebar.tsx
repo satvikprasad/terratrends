@@ -7,7 +7,6 @@ import { Line, LineChart } from "recharts";
 const SideBarTabNames = {
     demographics: "Demographics",
     businesses: "Businesses",
-    economy: "Economy",
 } as const;
 
 type SidebarTab = keyof typeof SideBarTabNames;
@@ -17,7 +16,7 @@ function getDummyGdpSectorPrediction(county: MapCounty): React.JSX.Element {
     const base = 8*stringToHash(county.name) - 4; // gives [-2, 2]    
     const percent = (base * 1.5).toFixed(1);  // scale to something like -3.0%, 0.0%, 3.0%
 
-    return <span className={`${base >= 0 ? "text-green-700" : "text-red-700"}`}>{base > 0 ? "+" : ""}{percent}% GDP &Delta;</span>
+    return <span className={`font-semibold ${base >= 0 ? "text-blue-600" : "text-red-500"}`}>{base > 0 ? "+" : ""}{percent}% GDP &Delta;</span>
 }
 
 
@@ -286,7 +285,7 @@ export default function Sidebar(): React.JSX.Element {
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-3 text-xs">
+                        <div className="grid grid-cols-2 text-xs">
                             {Object.keys(SideBarTabNames).map((key) => {
                                 return (
                                     <SidebarTab
@@ -304,9 +303,8 @@ export default function Sidebar(): React.JSX.Element {
                                     return <Demographics />;
                                 case "businesses":
                                     return <BusinessesTab />;
-                                case "economy":
                                 default:
-                                    return <></>;
+                                    return <Demographics />;
                             }
                         })()}
                     </>
@@ -328,15 +326,22 @@ export default function Sidebar(): React.JSX.Element {
                                 }} />
                                 <p>.</p>
                             </div>
-                            <button className={`p-3 rounded-xl ${inputBusType.trim() == "" ? "bg-slate-50 hover:cursor-not-allowed" : "bg-slate-100 hover:bg-slate-200"}`} onClick={() => {
-                                const trimmedType = inputBusType.trim();
+                            <button 
+                                className={`p-4 rounded-xl font-semibold text-base transition-all duration-200 ${
+                                    inputBusType.trim() == "" 
+                                        ? "bg-slate-100 text-slate-400 hover:cursor-not-allowed" 
+                                        : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                                }`} 
+                                onClick={() => {
+                                    const trimmedType = inputBusType.trim();
 
-                                if (trimmedType === "") {
-                                    return;
-                                }
+                                    if (trimmedType === "") {
+                                        return;
+                                    }
 
-                                setBusinessType(trimmedType);
-                            }}>
+                                    setBusinessType(trimmedType);
+                                }}
+                            >
                                 Begin analysing my TerraTrends
                             </button>
                         </>}
