@@ -16,7 +16,7 @@ function getDummyGdpSectorPrediction(county: MapCounty): React.JSX.Element {
     const base = 8*stringToHash(county.name) - 4; // gives [-2, 2]    
     const percent = (base * 1.5).toFixed(1);  // scale to something like -3.0%, 0.0%, 3.0%
 
-    return <span className={`font-semibold ${base >= 0 ? "text-blue-600" : "text-red-500"}`}>{base > 0 ? "+" : ""}{percent}% GDP &Delta;</span>
+    return <span className={`font-semibold ${base >= 0 ? "text-green-600" : "text-red-600"}`}>{base > 0 ? "+" : ""}{percent}% GDP &Delta;</span>
 }
 
 
