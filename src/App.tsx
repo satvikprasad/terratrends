@@ -163,23 +163,23 @@ function RenderCounties(): React.JSX.Element {
 
             let color;
 
-            // Interpolate between red and blue (with white in the middle)
-            // Red: rgb(239, 68, 68) - for negative values (t close to 0)
+            // Interpolate between dark orange and darker teal (with white in the middle)
+            // Dark orange: rgb(234, 88, 12) - for decline/negative values (t close to 0)
             // White: rgb(255, 255, 255) - for neutral (t = 0.5)
-            // Blue: rgb(59, 130, 246) - for positive values (t close to 1)
+            // Darker teal: rgb(13, 148, 136) - for growth/positive values (t close to 1)
             if (t < 0.5) {
-                // Red to white (t=0 is red, t=0.5 is white)
+                // Dark orange to white (t=0 is dark orange, t=0.5 is white)
                 const norm = t * 2; // 0 to 1 as t goes from 0 to 0.5
-                const r = 239 + (255 - 239) * norm;
-                const g = 68 + (255 - 68) * norm;
-                const b = 68 + (255 - 68) * norm;
+                const r = 234 + (255 - 234) * norm;
+                const g = 88 + (255 - 88) * norm;
+                const b = 12 + (255 - 12) * norm;
                 color = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
             } else {
-                // White to blue (t=0.5 is white, t=1 is blue)
+                // White to darker teal (t=0.5 is white, t=1 is darker teal)
                 const norm = (t - 0.5) * 2; // 0 to 1 as t goes from 0.5 to 1
-                const r = 255 - (255 - 59) * norm;
-                const g = 255 - (255 - 130) * norm;
-                const b = 255 - (255 - 246) * norm;
+                const r = 255 - (255 - 13) * norm;
+                const g = 255 - (255 - 148) * norm;
+                const b = 255 - (255 - 136) * norm;
                 color = `rgb(${Math.round(r)}, ${Math.round(g)}, ${Math.round(b)})`;
             }
 
@@ -234,10 +234,10 @@ function App() {
             <div className="absolute top-3 right-3 z-1000 flex flex-col gap-2">
                 <div className="bg-white p-3 rounded-xl flex flex-col gap-2 shadow-md">
                     <h1 className="font-bold text-xl text-center">Forecasted Growth</h1>
-                    <div className="w-60 h-10 rounded-lg border border-slate-200 shadow-sm" style={{background: 'linear-gradient(to right, #ef4444, white, #3b82f6)'}}></div>
+                    <div className="w-60 h-10 rounded-lg border border-slate-200 shadow-sm" style={{background: 'linear-gradient(to right, #ea580c, white, #0d9488)'}}></div>
                     <div className="grid grid-cols-2 text-xs text-slate-600 font-medium">
-                        <p className="text-red-500">Negative</p>
-                        <p className="text-right text-blue-500">Positive</p>
+                        <p style={{color: '#ea580c'}}>Decline</p>
+                        <p className="text-right" style={{color: '#0d9488'}}>Growth</p>
                     </div>
                 </div>
                 <CountySearch />
