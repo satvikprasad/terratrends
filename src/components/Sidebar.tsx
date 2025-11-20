@@ -1,4 +1,4 @@
-import { useMapState } from "@/Map";
+import { useMapState, type MapCounty } from "@/Map";
 import type { BusinessPlace } from "@/types/businesses";
 import { useState } from "react";
 import { Line, LineChart } from "recharts";
@@ -10,6 +10,16 @@ const SideBarTabNames = {
 } as const;
 
 type SidebarTab = keyof typeof SideBarTabNames;
+
+function getDummyGdpSectorPrediction(county: MapCounty): React.JSX.Element {
+    // Super simple, fake “prediction” based only on countyId
+    const base = (parseInt(county.countyId) % 5) - 2;   // gives -2, -1, 0, 1, 2
+    const percent = (base * 1.5).toFixed(1);  // scale to something like -3.0%, 0.0%, 3.0%
+    const direction = base >= 0 ? "growth" : "decline";
+
+    return <span className={`${base >= 0 ? "text-green-700" : "text-red-700"}`}>{base > 0 ? "+" : ""}{percent}% GDP &Delta;</span>
+}
+
 
 function Demographics() {
     return (
@@ -267,9 +277,15 @@ export default function Sidebar(): React.JSX.Element {
             <div className="min-w-100 max-w-100 shadow-xl z-1000 max-h-screen flex flex-col overflow-hidden">
                 {(county && businessType) ? (
                     <>
-                        <p className="text-slate-800 font-bold text-xl text-center py-4 px-3 border-b border-slate-200">
-                            {county.name} County Analytics
-                        </p>
+                        <div className="flex items-center justify-between py-4 px-3 border-b border-slate-200">
+                            <p className="text-slate-800 font-bold text-xl">
+                                {county.name} County
+                            </p>
+                            <p className="text-sm text-slate-600 text-right max-w-[8rem]">
+                                {getDummyGdpSectorPrediction(county)}
+                            </p>
+                        </div>
+
                         <div className="grid grid-cols-3 text-xs">
                             {Object.keys(SideBarTabNames).map((key) => {
                                 return (
