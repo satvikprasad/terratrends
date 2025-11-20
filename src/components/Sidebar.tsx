@@ -1,5 +1,6 @@
 import { useMapState, type MapCounty } from "@/Map";
 import type { BusinessPlace } from "@/types/businesses";
+import { stringToHash } from "@/util/hash";
 import { useState } from "react";
 import { Line, LineChart } from "recharts";
 
@@ -13,9 +14,8 @@ type SidebarTab = keyof typeof SideBarTabNames;
 
 function getDummyGdpSectorPrediction(county: MapCounty): React.JSX.Element {
     // Super simple, fake “prediction” based only on countyId
-    const base = (parseInt(county.countyId) % 5) - 2;   // gives -2, -1, 0, 1, 2
+    const base = 8*stringToHash(county.name) - 4; // gives [-2, 2]    
     const percent = (base * 1.5).toFixed(1);  // scale to something like -3.0%, 0.0%, 3.0%
-    const direction = base >= 0 ? "growth" : "decline";
 
     return <span className={`${base >= 0 ? "text-green-700" : "text-red-700"}`}>{base > 0 ? "+" : ""}{percent}% GDP &Delta;</span>
 }

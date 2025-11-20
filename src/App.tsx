@@ -10,6 +10,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Sidebar from "./components/Sidebar";
 import { MapProvider, useMapState, type MapCounty } from "./Map";
 
+import { stringToHash } from "./util/hash";
+
 function CountySearch() {
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredCounties, setFilteredCounties] = useState<MapCounty[]>([]);
@@ -69,10 +71,9 @@ function CountySearch() {
 }
 
 function RenderCounties(): React.JSX.Element {
-    const map = useMap();
     const geoJsonRef = useRef<L.GeoJSON>(null);
 
-    const { county, setCounty } = useMapState();
+    const { county, setCounty, businessType  } = useMapState();
 
     const [hoveredCounty, setHoveredCounty] = useState<MapCounty | null>(null);
 
@@ -144,6 +145,33 @@ function RenderCounties(): React.JSX.Element {
         if (isSelected) {
             return {
                 fillColor: "#006cff",
+                weight: 2,
+                opacity: 1.0,
+                color: "#757575",
+            };
+        }
+
+        if (businessType) {
+            const name = feature?.properties?.NAME;
+
+            // Generate a random float in [0, 1] by hashing the county's name (deterministic
+            // pseudorandom).
+            const t = stringToHash(name);
+
+            let color;
+
+            // Interpolate between blue and red (with white in the middle)
+            // using naive math.
+            if (t > 0.5) {
+                const norm = 2*t - 1;
+                color = `rgb(${255 - 255*norm}, ${255 - 255*norm}, 255)`;
+            } else {
+                const norm = 2*t;
+                color = `rgb(255, ${255*norm}, ${255*norm})`;
+            }
+
+            return {
+                fillColor: color,
                 weight: 2,
                 opacity: 1.0,
                 color: "#757575",
