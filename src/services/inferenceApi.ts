@@ -1,20 +1,26 @@
 import type { InferenceRequest, RankedCounty } from "@/types/businesses";
+import { DEMO_RANKED_COUNTIES } from "@/data/demoBusinesses";
 
+const DEMO_MODE = import.meta.env.VITE_DEBUG_DEMO_DATA === "true";
 const INFERENCE_API_URL = import.meta.env.VITE_INFERENCE_API_URL;
 
-if (!INFERENCE_API_URL) {
+if (!DEMO_MODE && !INFERENCE_API_URL) {
     throw new Error("Missing VITE_INFERENCE_API_URL environment variable.");
 }
 
 export async function fetchCountyRankings(
-    payload: InferenceRequest
+    _payload: InferenceRequest
 ): Promise<RankedCounty[]> {
+    if (DEMO_MODE) {
+        return DEMO_RANKED_COUNTIES;
+    }
+
     const response = await fetch(INFERENCE_API_URL, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(_payload),
     });
 
     if (!response.ok) {

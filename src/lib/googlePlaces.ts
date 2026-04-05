@@ -4,7 +4,9 @@ import type {
     FetchBusinessesError,
     FetchBusinessesSuccess,
 } from "@/types/businesses";
+import { getDemoBusinesses } from "@/data/demoBusinesses";
 
+const DEMO_MODE = import.meta.env.VITE_DEBUG_DEMO_DATA === "true";
 const API_ENDPOINT = "/api/businesses";
 
 export async function fetchCountyBusinesses({
@@ -13,6 +15,10 @@ export async function fetchCountyBusinesses({
     businessType,
     radiusMeters,
 }: FetchBusinessesRequest): Promise<BusinessPlace[]> {
+    if (DEMO_MODE) {
+        return getDemoBusinesses(countyName, businessType);
+    }
+
     const params = new URLSearchParams({
         countyName,
         stateId,

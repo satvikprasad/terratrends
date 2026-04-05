@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { fetchCountyBusinesses } from "./lib/googlePlaces";
 import { fetchCountyRankings } from "./services/inferenceApi";
 import type { BusinessPlace, InferenceRequest, RankedCounty } from "./types/businesses";
@@ -101,17 +101,20 @@ export function MapProvider({ children }: React.PropsWithChildren) {
             };
         });
     }, [setMapState]);*/
+    const rankedCountiesRef = useRef(rankedCounties);
+    useEffect(() => { rankedCountiesRef.current = rankedCounties; }, [rankedCounties]);
+
     //antony
     const setCountyWithBusinessTypeCheck = useCallback((county: MapCounty) => {
             setMapState((s) => {
-                if (rankedCounties.length === 0) return s;
+                if (rankedCountiesRef.current.length === 0) return s;
 
                 return {
                     businessType: s.businessType,
                     county
                 };
             });
-    }, [setMapState, rankedCounties.length]);
+    }, [setMapState]);
     const runInference = useCallback(async (payload: InferenceRequest) => {
         setIsRunningInference(true);
         setInferenceError(null);
