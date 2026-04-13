@@ -1,9 +1,10 @@
 import { useMapState } from "@/Map";
 import { VALID_HORIZONS, VALID_SECTORS } from "@/constants/sectors";
-import type { BusinessPlace, InferenceRequest, RankedCounty } from "@/types/businesses";
+import type { InferenceRequest, RankedCounty } from "@/types/businesses";
 import { useMemo, useState } from "react";
 import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { countyGdpData } from "@/data/countyGdp";
+import { BusinessesTab } from "@/components/BusinessesTab";
 
 const SideBarTabNames = {
 	demographics: "Demographics",
@@ -343,113 +344,6 @@ function InferenceForm() {
 	);
 }
 
-function BusinessCard({ business, index }: { business: BusinessPlace; index: number }) {
-	const typeList = business.types.slice(0, 3).map((type) => type.replace(/_/g, " "));
-	const mapLink = `https://www.google.com/maps/place/?q=place_id:${business.placeId}`;
-		const ratingText =
-		typeof business.rating === "number" ? business.rating.toFixed(1) : "N/A";
-
-	return (
-		<div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-2">
-		<div className="flex flex-row justify-between gap-4">
-		<div className="flex flex-col gap-1">
-		<p className="text-xs text-slate-400 font-semibold tracking-wide">
-		#{index + 1}
-		</p>
-		<p className="font-semibold text-lg">{business.name}</p>
-		<p className="text-sm text-slate-500">{business.address}</p>
-		</div>
-		<div className="text-right">
-		<p className="text-xl font-bold text-slate-800">{ratingText}</p>
-		<p className="text-xs text-slate-500">
-		{business.totalRatings} review{business.totalRatings === 1 ? "" : "s"}
-		</p>
-		{business.priceLevel !== null && (
-			<p className="text-xs text-slate-500">
-			{"$".repeat(Math.max(1, business.priceLevel))}
-			</p>
-		)}
-		</div>
-		</div>
-		{typeList.length > 0 && (
-			<p className="text-xs text-slate-500">{typeList.join(" • ")}</p>
-		)}
-		<a
-		href={mapLink}
-		target="_blank"
-		rel="noreferrer"
-		className="text-sm text-blue-600 font-medium"
-		>
-		Open in Google Maps →
-		</a>
-		</div>
-	);
-}
-
-function BusinessesTab() {
-	const {
-		businessType,
-		county,
-		businesses,
-		isFetchingBusinesses,
-		businessError,
-	} = useMapState();
-
-	if (!businessType) {
-		return (
-			<div className="p-6 text-slate-600">
-			Enter a business type to see tailored Google Maps insights here.
-				</div>
-		);
-	}
-
-	if (!county) {
-		return (
-			<div className="p-6 text-slate-600">
-			Click on a county to pull the highest-rated {businessType} businesses nearby.
-				</div>
-		);
-	}
-
-	if (businessError) {
-		return (
-			<div className="p-6 text-red-600">
-			{businessError}
-			</div>
-		);
-	}
-
-	if (isFetchingBusinesses) {
-		return (
-			<div className="p-6 flex flex-col gap-3 animate-pulse text-slate-600">
-			<p className="font-semibold">Fetching Google Maps listings...</p>
-			<p>We are geocoding {county.name} County and compiling the best-rated matches.</p>
-			</div>
-		);
-	}
-
-	if (businesses.length === 0) {
-		return (
-			<div className="p-6 text-slate-600">
-			No Google Maps listings matched “{businessType}” for {county.name} County.
-				Try another category or widen your search.
-				</div>
-		);
-	}
-
-	return (
-		<div className="flex flex-col gap-3 p-3 h-full overflow-scroll">
-		<div className="bg-slate-50 rounded-2xl p-3 text-sm text-slate-600 border border-slate-200">
-		Showing <span className="font-semibold">{businessType}</span> businesses in{" "}
-		<span className="font-semibold">{county.name} County</span>, sorted by rating.
-			</div>
-		{businesses.map((business, index) => (
-			<BusinessCard key={business.placeId} business={business} index={index} />
-		))}
-		</div>
-	);
-}
-
 //antony
 function RankedCountyCard({ county }: { county: RankedCounty }) {
 	const hasWarning = county.status !== "ok" || county.notes.trim() !== "";
@@ -506,12 +400,7 @@ function RankedCountiesList() {
 		))}
 		</div>
 	);
-}
-
-
-
-
-function SidebarTab({
+}function SidebarTab({
 	tab,
 	currTab,
 	setCurrTab,
