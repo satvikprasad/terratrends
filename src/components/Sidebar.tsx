@@ -6,6 +6,23 @@ import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Too
 import { countyGdpData } from "@/data/countyGdp";
 import { BusinessesTab } from "@/components/BusinessesTab";
 
+function statusMessage(status: string, notes: string): { label: string; detail: string } | null {
+	if (status === "ok" && notes.trim() === "") return null;
+	if (status === "ok" && notes.includes("pop_dampened")) {
+		return {
+			label: "Small market",
+			detail: "This county has a population under 40,000. Revenue potential and sector data may be limited compared to larger markets.",
+		};
+	}
+	if (status === "error") {
+		return {
+			label: "Insufficient data",
+			detail: "No sector forecast data is available for this county. Scores are estimated from county-level signals only.",
+		};
+	}
+	return { label: `Status: ${status}`, detail: notes };
+}
+
 const SideBarTabNames = {
 	demographics: "Demographics",
 	businesses: "Businesses",
@@ -346,7 +363,7 @@ function InferenceForm() {
 
 //antony
 function RankedCountyCard({ county }: { county: RankedCounty }) {
-	const hasWarning = county.status !== "ok" || county.notes.trim() !== "";
+	const warning = statusMessage(county.status, county.notes);
 
 	return (
 		<div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col gap-2">
@@ -371,10 +388,10 @@ function RankedCountyCard({ county }: { county: RankedCounty }) {
 		<p>Annual growth: <span className="font-medium text-slate-800">{formatPercent(county.annual_growth_rate)}</span></p>
 		</div>
 
-		{hasWarning && (
+		{warning && (
 			<div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-			<p className="font-semibold">Status: {county.status}</p>
-			{county.notes.trim() !== "" && <p>{county.notes}</p>}
+			<p className="font-semibold">{warning.label}</p>
+			<p>{warning.detail}</p>
 			</div>
 		)}
 		</div>
@@ -520,19 +537,16 @@ export default function Sidebar(): React.JSX.Element {
 					</div>
 					</div>
 
-					{(selectedCountyResult.status !== "ok" ||
-					  selectedCountyResult.notes.trim() !== "") && (
-					<div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-					<p className="font-semibold">
-					Status: {selectedCountyResult.status}
-					</p>
-					{selectedCountyResult.notes.trim() !== "" && (
-						<p>{selectedCountyResult.notes}</p>
-					)}
-					</div>
-					)}
-
-					<GdpChart countyName={county.name} />
+{(() => {
+							const w = statusMessage(selectedCountyResult.status, selectedCountyResult.notes);
+							return w ? (
+								<div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+								<p className="font-semibold">{w.label}</p>
+								<p>{w.detail}</p>
+								</div>
+							) : null;
+						})()}
+						<GdpChart countyName={county.name} />
 					</div>
 				) : (
 				<RankedCountiesList />
