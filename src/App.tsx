@@ -14,7 +14,7 @@ function CountySearch() {
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredCounties, setFilteredCounties] = useState<MapCounty[]>([]);
     const [showDropdown, setShowDropdown] = useState(false);
-    const { setCounty } = useMapState();
+    const { setCounty, rankedCountyMap } = useMapState();
 
     const allCounties: MapCounty[] = useMemo(() =>
         countyData.features.map((feature) => ({
@@ -28,11 +28,22 @@ function CountySearch() {
     useEffect(() => {
         const filtered = allCounties.filter(county =>
             county.name.toLowerCase().includes(searchTerm.toLowerCase())
-        )
+        );
+
+        const hasRankings = Object.keys(rankedCountyMap).length > 0;
+        if (hasRankings) {
+            filtered.sort((a, b) => {
+                const aKey = `${a.name}, ga`.toLowerCase();
+                const bKey = `${b.name}, ga`.toLowerCase();
+                const aRank = rankedCountyMap[aKey]?.rank ?? Infinity;
+                const bRank = rankedCountyMap[bKey]?.rank ?? Infinity;
+                return aRank - bRank;
+            });
+        }
 
         setFilteredCounties(filtered);
         setShowDropdown(filtered.length > 0);
-    }, [searchTerm]);
+    }, [searchTerm, rankedCountyMap]);
 
     const handleCountySelect = (county: MapCounty) => {
         setCounty?.({
@@ -53,15 +64,21 @@ function CountySearch() {
             />
             {showDropdown && (
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-xl shadow-md max-h-60 overflow-y-auto z-10">
-                    {filteredCounties.map((county) => (
+                    {filteredCounties.map((county) => {
+                        const rank = rankedCountyMap[`${county.name}, ga`.toLowerCase()]?.rank;
+                        return (
                         <div
                             key={`${county.stateId}-${county.countyId}`}
                             onClick={() => handleCountySelect(county)}
-                            className="p-3 hover:bg-blue-100 cursor-pointer border-b border-gray-200 last:border-b-0"
+                            className="p-3 hover:bg-blue-100 cursor-pointer border-b border-gray-200 last:border-b-0 flex items-center justify-between"
                         >
                             <p className="text-sm font-medium">{county.name}</p>
+                            {rank !== undefined && (
+                                <p className="text-xs text-slate-400 font-medium ml-2">#{rank}</p>
+                            )}
                         </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>
