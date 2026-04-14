@@ -120,6 +120,43 @@ function RenderCounties(): React.JSX.Element {
     // event-handler closures (captured once at mount) always see current rankings.
     const getCountyStyleRef = useRef<(f: Feature<Geometry, any> | undefined) => object>(() => ({}));
 
+    // Animated fill opacity: starts at 0 and fades in when ranked counties arrive
+    const [animFillOpacity, setAnimFillOpacity] = useState(0);
+    const animRef = useRef<number | null>(null);
+    const prevRankedSizeRef = useRef(0);
+
+    useEffect(() => {
+        const currentSize = Object.keys(rankedCountyMap).length;
+        const prevSize = prevRankedSizeRef.current;
+        prevRankedSizeRef.current = currentSize;
+
+        if (currentSize === 0) {
+            if (animRef.current) { cancelAnimationFrame(animRef.current); animRef.current = null; }
+            setAnimFillOpacity(0);
+            return;
+        }
+
+        if (prevSize === 0 && currentSize > 0) {
+            if (animRef.current) cancelAnimationFrame(animRef.current);
+
+            const duration = 1200;
+            const targetOpacity = 0.75;
+            const startTime = performance.now();
+
+            function animate(now: number) {
+                const progress = Math.min((now - startTime) / duration, 1);
+                setAnimFillOpacity(progress * targetOpacity);
+                if (progress < 1) {
+                    animRef.current = requestAnimationFrame(animate);
+                }
+            }
+
+            animRef.current = requestAnimationFrame(animate);
+        }
+
+        return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
+    }, [rankedCountyMap]);
+
     const getCountyStyle = useCallback(
         (feature: Feature<Geometry, any> | undefined) => {
             if (businessType) {
@@ -150,7 +187,7 @@ function RenderCounties(): React.JSX.Element {
                         weight: 1.5,
                         opacity: 0.9,
                         color: "#475569",
-                        fillOpacity: 0.75,
+                        fillOpacity: animFillOpacity,
                     };
                 }
             }
@@ -163,7 +200,7 @@ function RenderCounties(): React.JSX.Element {
                 fillOpacity: 0.6,
             };
         },
-        [businessType, rankedCountyMap]
+        [businessType, rankedCountyMap, animFillOpacity]
     );
 
     // Synchronous update — no useEffect delay

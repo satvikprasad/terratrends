@@ -458,8 +458,14 @@ export default function Sidebar(): React.JSX.Element {
 		<>
 		{/** Sidebar component */}
 		<div className="min-w-100 max-w-100 shadow-xl z-1000 max-h-screen flex flex-col overflow-hidden">
-		<div className="px-6 py-4 border-b border-slate-200">
-			<span className="text-lg font-bold tracking-tight text-slate-800">Terra<span className="text-blue-600">Trends</span></span>
+		<div className="px-6 py-4 border-b border-slate-200 flex justify-center">
+			<div className="overflow-hidden" style={{ width: '200px', height: '72px', marginLeft: '-20px' }}>
+				<img
+					src="/TerraTrendsLogo.png"
+					alt="TerraTrends"
+					style={{ width: '200px', marginTop: '-60px' }}
+				/>
+			</div>
 		</div>
 		{rankedCounties.length === 0 ? (
 			<InferenceForm />
